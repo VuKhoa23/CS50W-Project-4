@@ -122,3 +122,26 @@ def unfollow(request):
     follow = Follow.objects.get(user=current_user, followed=target_user)
     follow.delete()
     return HttpResponseRedirect(reverse("profile", kwargs={"id": target_user.id}))
+
+def following(request):
+    current_user = User.objects.get(id=request.user.id)
+    followed_by_user = Follow.objects.filter(user=current_user)
+
+    followed_post = []
+
+    all_posts = Post.objects.all().order_by("-timestamp")
+
+    for post in all_posts:
+        for followed in followed_by_user:
+            if followed.followed == post.author:
+                followed_post.append(post)
+
+    # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
+    paginator = Paginator(followed_post, 10)
+    page_number = request.GET.get('p')
+    posts = paginator.get_page(page_number)
+
+    return render(request, "network/following.html",{
+        "posts": posts
+    })
+    
