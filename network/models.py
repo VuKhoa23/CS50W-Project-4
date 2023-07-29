@@ -11,4 +11,11 @@ class Post(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"Post by {self.author} on {self.timestamp} - id={self.id}"
+        return f"Post by {self.author} on {self.timestamp} - ID={self.id}"
+
+class Follow(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    followed = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followed")
+
+    def __str__(self):
+        return f"Post by {self.user} follow {self.followed}"

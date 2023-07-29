@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator
 
-from .models import User, Post
+from .models import User, Post, Follow
 
 
 def index(request):
@@ -85,6 +85,13 @@ def get_profile(request, id):
     user = User.objects.get(id=id)
     all_posts = Post.objects.filter(author = user).order_by("-timestamp")
 
+    followings = Follow.objects.filter(user=user)
+    followers  = Follow.objects.filter(followed = user)
+
+    current_user = request.user
+    is_following = followers.filter(user=User.objects.get(pk=current_user.id))
+    is_following = bool(is_following)
+
     # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
     paginator = Paginator(all_posts, 10)
     page_number = request.GET.get('p')
@@ -94,5 +101,24 @@ def get_profile(request, id):
     return render(request, "network/profile.html",{
         "posts": posts,
         'username': user.username,
-        'user_id': user.id,
+        'target_user_id': user.id,
+        'followings': followings,
+        'followers': followers,
+        'is_following': is_following
     })
+
+def follow(request):
+    
+    target_user = User.objects.get(id=request.POST.get('target-user-id'))
+    current_user = request.user
+    follow = Follow(user=current_user, followed=target_user)
+    follow.save()
+    return HttpResponseRedirect(reverse("profile", kwargs={"id": target_user.id}))
+
+def unfollow(request):
+    print(request.POST.get('target-user-id'))
+    target_user = User.objects.get(id=request.POST.get('target-user-id'))
+    current_user = request.user
+    follow = Follow.objects.get(user=current_user, followed=target_user)
+    follow.delete()
+    return HttpResponseRedirect(reverse("profile", kwargs={"id": target_user.id}))
