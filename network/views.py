@@ -3,7 +3,10 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+import json
 
 from .models import User, Post, Follow
 
@@ -132,8 +135,8 @@ def following(request):
     all_posts = Post.objects.all().order_by("-timestamp")
 
     for post in all_posts:
-        for followed in followed_by_user:
-            if followed.followed == post.author:
+        for user in followed_by_user:
+            if user.followed == post.author:
                 followed_post.append(post)
 
     # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
@@ -144,4 +147,16 @@ def following(request):
     return render(request, "network/following.html",{
         "posts": posts
     })
-    
+
+@csrf_exempt
+def edit(request, id):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        target_post = Post.objects.get(id=id)
+        new_content = body['new_content']
+        target_post.content = new_content
+        target_post.save()
+        return JsonResponse({
+            'message': 'Success',
+            'content': new_content,
+        })   
