@@ -1,6 +1,6 @@
-{% extends "network/layout.html" %} {% block body %}
-<h1>ALL POST</h1>
-{% if user.is_authenticated %}
+{% extends "network/layout.html" %} 
+{% block body %} 
+{%if user.is_authenticated%}
 <h3>Create a new post</h3>
 <form action="{% url 'add-post' %}" method="POST">
   {% csrf_token %}
@@ -18,4 +18,26 @@
     <button class="btn btn-primary">Post</button>
   </div>
 </form>
-{% endif %} {% endblock %}
+{% endif %}
+
+<h1>ALL POST</h1>
+
+<div>
+  {% for post in all_posts %}
+  <div>
+    <label for="post-content">{{post.author}} - {{post.timestamp}}</label>
+    <textarea
+      name="post-content"
+      style="background-color: lightgray"
+      class="form-control"
+      id="post-content"
+      rows="3"
+      readonly
+    >
+{{post.content}}</textarea
+    >
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
