@@ -12,13 +12,12 @@ def index(request):
     all_posts = Post.objects.all().order_by("-timestamp")
 
     # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
-    paginator = Paginator(all_posts, 2)
+    paginator = Paginator(all_posts, 10)
     page_number = request.GET.get('p')
     posts = paginator.get_page(page_number)
 
     
     return render(request, "network/index.html",{
-        "all_posts": all_posts,
         "posts": posts
     })
 
@@ -81,3 +80,19 @@ def add_post(request):
         post = Post(content=post_content, author = user)
         post.save()
         return HttpResponseRedirect(reverse("index"))
+    
+def get_profile(request, id):
+    user = User.objects.get(id=id)
+    all_posts = Post.objects.filter(author = user).order_by("-timestamp")
+
+    # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
+    paginator = Paginator(all_posts, 10)
+    page_number = request.GET.get('p')
+    posts = paginator.get_page(page_number)
+
+    
+    return render(request, "network/profile.html",{
+        "posts": posts,
+        'username': user.username,
+        'user_id': user.id,
+    })

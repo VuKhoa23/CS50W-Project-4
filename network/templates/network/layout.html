@@ -18,13 +18,13 @@
   </head>
   <body style="padding-left: 15%; padding-right: 15%">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">Network</a>
+      <a class="navbar-brand" href="{% url 'index' %}">Network</a>
 
       <div>
         <ul class="navbar-nav mr-auto">
           {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="#"
+            <a class="nav-link" href="{% url 'profile' user.id %}"
               ><strong>{{ user.username }}</strong></a
             >
           </li>
