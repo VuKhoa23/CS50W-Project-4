@@ -1,5 +1,21 @@
-{% extends "network/layout.html" %}
-
-{% block body %}
-    TODO
-{% endblock %}
+{% extends "network/layout.html" %} {% block body %}
+<h1>ALL POST</h1>
+{% if user.is_authenticated %}
+<h3>Create a new post</h3>
+<form action="{% url 'add-post' %}" method="POST">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="post-content">Fill your post</label>
+    <textarea
+      name="post-content"
+      style="background-color: lightgray"
+      class="form-control"
+      id="post-content"
+      rows="3"
+    ></textarea>
+  </div>
+  <div class="d-flex justify-content-end">
+    <button class="btn btn-primary">Post</button>
+  </div>
+</form>
+{% endif %} {% endblock %}
