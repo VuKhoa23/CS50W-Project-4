@@ -1,6 +1,5 @@
-{% extends "network/layout.html" %} 
-{% block body %} 
-{%if user.is_authenticated%}
+{% extends "network/layout.html" %} {% block body %}
+ {%if user.is_authenticated%}
 <h3>Create a new post</h3>
 <form action="{% url 'add-post' %}" method="POST">
   {% csrf_token %}
@@ -23,7 +22,7 @@
 <h1>ALL POST</h1>
 
 <div>
-  {% for post in all_posts %}
+  {% for post in posts %}
   <div>
     <label for="post-content">{{post.author}} - {{post.timestamp}}</label>
     <textarea
@@ -37,7 +36,21 @@
 {{post.content}}</textarea
     >
   </div>
-  {% endfor %}
 </div>
+
+{% endfor %}
+<nav
+  aria-label="Page navigation example"
+  class="d-flex justify-content-center mt-2"
+>
+  <ul class="pagination">
+    {% if posts.has_previous%}
+    <li class="page-item"><a class="page-link" href="?p={{posts.previous_page_number}}">Previous</a></li>
+    {% endif %}
+    {% if posts.has_next%}
+    <li class="page-item"><a class="page-link" href="?p={{posts.next_page_number}}">Next</a></li>
+    {% endif %}
+  </ul>
+</nav>
 
 {% endblock %}
