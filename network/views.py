@@ -40,6 +40,45 @@ def index(request):
     })
 
 
+def following(request):
+    current_user = User.objects.get(id=request.user.id)
+    followed_by_user = Follow.objects.filter(user=current_user)
+
+    followed_post = []
+
+    all_posts = Post.objects.all().order_by("-timestamp")
+
+    for post in all_posts:
+        for user in followed_by_user:
+            if user.followed == post.author:
+                followed_post.append(post)
+
+    # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
+    paginator = Paginator(followed_post, 10)
+    page_number = request.GET.get('p')
+    posts = paginator.get_page(page_number)
+
+
+    likes = Like.objects.all()
+
+    liked = []
+
+    for like in likes:
+        if like.user.id == request.user.id:
+            liked.append(like.post.id)
+
+    like = []
+    for post in posts:
+        like_on_post = Like.objects.filter(post=post).count()
+        post.likes = like_on_post  
+        post.save()
+
+    return render(request, "network/following.html",{
+        "posts": posts,
+        'liked': liked
+    })
+
+
 def login_view(request):
     if request.method == "POST":
 
@@ -141,27 +180,6 @@ def unfollow(request):
     follow.delete()
     return HttpResponseRedirect(reverse("profile", kwargs={"id": target_user.id}))
 
-def following(request):
-    current_user = User.objects.get(id=request.user.id)
-    followed_by_user = Follow.objects.filter(user=current_user)
-
-    followed_post = []
-
-    all_posts = Post.objects.all().order_by("-timestamp")
-
-    for post in all_posts:
-        for user in followed_by_user:
-            if user.followed == post.author:
-                followed_post.append(post)
-
-    # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
-    paginator = Paginator(followed_post, 10)
-    page_number = request.GET.get('p')
-    posts = paginator.get_page(page_number)
-
-    return render(request, "network/following.html",{
-        "posts": posts
-    })
 
 @csrf_exempt
 def edit(request, id):
