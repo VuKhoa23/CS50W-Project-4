@@ -78,6 +78,49 @@ def following(request):
         'liked': liked
     })
 
+def get_profile(request, id):
+    user = User.objects.get(id=id)
+    all_posts = Post.objects.filter(author = user).order_by("-timestamp")
+
+    followings = Follow.objects.filter(user=user)
+    followers  = Follow.objects.filter(followed = user)
+
+    current_user = request.user
+    is_following = followers.filter(user=User.objects.get(pk=current_user.id))
+    is_following = bool(is_following)
+
+    # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
+    paginator = Paginator(all_posts, 10)
+    page_number = request.GET.get('p')
+    posts = paginator.get_page(page_number)
+
+
+    likes = Like.objects.all()
+
+    liked = []
+
+    for like in likes:
+        if like.user.id == request.user.id:
+            liked.append(like.post.id)
+
+    like = []
+    for post in posts:
+        like_on_post = Like.objects.filter(post=post).count()
+        post.likes = like_on_post  
+        post.save()
+
+    
+    return render(request, "network/profile.html",{
+        "posts": posts,
+        'username': user.username,
+        'target_user_id': user.id,
+        'followings': followings,
+        'followers': followers,
+        'is_following': is_following,
+        'liked': liked
+    })
+
+
 
 def login_view(request):
     if request.method == "POST":
@@ -138,31 +181,6 @@ def add_post(request):
         post.save()
         return HttpResponseRedirect(reverse("index"))
     
-def get_profile(request, id):
-    user = User.objects.get(id=id)
-    all_posts = Post.objects.filter(author = user).order_by("-timestamp")
-
-    followings = Follow.objects.filter(user=user)
-    followers  = Follow.objects.filter(followed = user)
-
-    current_user = request.user
-    is_following = followers.filter(user=User.objects.get(pk=current_user.id))
-    is_following = bool(is_following)
-
-    # reference to: https://docs.djangoproject.com/en/4.2/topics/pagination/
-    paginator = Paginator(all_posts, 10)
-    page_number = request.GET.get('p')
-    posts = paginator.get_page(page_number)
-
-    
-    return render(request, "network/profile.html",{
-        "posts": posts,
-        'username': user.username,
-        'target_user_id': user.id,
-        'followings': followings,
-        'followers': followers,
-        'is_following': is_following
-    })
 
 def follow(request):
     

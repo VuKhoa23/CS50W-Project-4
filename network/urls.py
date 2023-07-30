@@ -18,4 +18,7 @@ urlpatterns = [
     path("unlike/<int:post_id>", views.unlike, name="unlike"),
     path("like/<int:post_id>", views.like, name="like"),
     path("get-like", views.get_like, name="get-like"),
+    path("profile/unlike/<int:post_id>", views.unlike, name="unlike"),
+    path("profile/like/<int:post_id>", views.like, name="like"),
+    path("profile/get-like", views.get_like, name="get-like"),
 ]
