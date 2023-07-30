@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 import json
 
-from .models import User, Post, Follow
+from .models import User, Post, Follow, Like
 
 
 def index(request):
@@ -19,9 +19,24 @@ def index(request):
     page_number = request.GET.get('p')
     posts = paginator.get_page(page_number)
 
+    likes = Like.objects.all()
+
+    liked = []
+
+    for like in likes:
+        if like.user.id == request.user.id:
+            liked.append(like.post.id)
+
+    like = []
+    for post in posts:
+        like_on_post = Like.objects.filter(post=post).count()
+        post.likes = like_on_post  
+        post.save()
     
+
     return render(request, "network/index.html",{
-        "posts": posts
+        "posts": posts,
+        "liked": liked
     })
 
 
@@ -160,3 +175,44 @@ def edit(request, id):
             'message': 'Success',
             'content': new_content,
         })   
+    
+def unlike(request, post_id):
+    all_posts = Post.objects.all().order_by("-timestamp")
+    
+    target_post = Post.objects.get(id=post_id)
+    user = User.objects.get(id=request.user.id)
+    like_obj = Like.objects.filter(user=user,post=target_post)
+    like_obj.delete()
+
+    like_on_post = Like.objects.filter(post=target_post).count()
+    likes = like_on_post
+    return JsonResponse({
+            'message': 'Unlike Success',
+            'likes': likes,
+        })  
+
+def like(request, post_id):
+    all_posts = Post.objects.all().order_by("-timestamp")
+
+    target_post = Post.objects.get(id=post_id)
+    user = User.objects.get(id=request.user.id)
+    like_obj = Like(user=user, post=target_post)
+    like_obj.save()
+
+    like_on_post = Like.objects.filter(post=target_post).count()
+    likes = like_on_post
+
+    return JsonResponse({
+            'message': 'Like Success',
+            'likes': likes,
+        })  
+
+def get_like(request):
+    likes = Like.objects.all()
+    liked = []
+    for like in likes:
+        if like.user.id == request.user.id:
+            liked.append(like.post.id)
+    return JsonResponse({
+            'liked': liked,
+        })  

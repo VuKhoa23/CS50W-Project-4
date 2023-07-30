@@ -25,6 +25,14 @@
   {% for post in posts %}
   <div>
     <label for="post-content"> <a href="{% url 'profile' post.author.id %}">{{post.author}}</a> - {{post.timestamp}}</label>
+    {%if user.is_authenticated%}
+      {% if post.id in liked %}
+        <button id="{{post.id}}" onclick="LikeBtnClicked({{post.id}})">Unike</button>
+      {% else %}
+        <button id="{{post.id}}" onclick="LikeBtnClicked({{post.id}})">Like</button>
+      {% endif %}
+    {%endif%}
+    <span id="numbers_of_like_{{post.id}}">Likes: {{post.likes}}</span>
     <textarea
       name="post-content"
       style="background-color: lightgray"
@@ -36,6 +44,7 @@
     <div class="d-flex justify-content-end">
         <button class="btn btn-secondary" data-toggle="modal" data-target="#edit_{{post.id}}">Edit</button>
     </div>
+    
 
     <div class="modal fade" id="edit_{{post.id}}" tabindex="-1" role="dialog" aria-labelledby="edit_{{post.id}}_label" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -56,7 +65,6 @@
             </div>
         </div>
     </div>
-
     {% endif %}
   </div>
 </div>
@@ -90,6 +98,41 @@
         const content = document.querySelector(`#post-content-${id}`)
         content.innerHTML = result.content
 
+    }
+
+    async function LikeBtnClicked(post_id){
+      get_like = await fetch('get-like')
+      res = await get_like.json()
+      liked = res['liked']
+      console.log(liked)
+      btn = document.getElementById(`${post_id}`)
+      if(liked.includes(post_id)){
+          var is_like = true
+      } 
+      else{
+          var is_like = false
+      }
+      if(is_like === true){
+
+
+        response = await fetch(`unlike/${post_id}`)
+        result = await response.json()
+        console.log("This is unlike")
+        console.log(result)
+        number_of_like_field = document.getElementById(`numbers_of_like_${post_id}`)
+        number_of_like_field.innerHTML = `Likes: ${result.likes}`
+        btn.innerHTML = 'Like'
+      }
+      else{
+        response = await fetch(`like/${post_id}`)
+        result = await response.json()
+        console.log("This is like")
+        console.log(result)
+        number_of_like_field = document.getElementById(`numbers_of_like_${post_id}`)
+        number_of_like_field.innerHTML = `Likes: ${result.likes}`
+        btn.innerHTML = 'Unlike';
+      }
+      is_like = !is_like
     }
 </script>
 
